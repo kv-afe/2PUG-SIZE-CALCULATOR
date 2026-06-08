@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sizing Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; margin-top: 20px; cursor: pointer; }
+        button:hover { background-color: #004494; }
+        .result { margin-top: 20px; padding: 10px; background-color: #e9ecef; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Size Calculator</h2>
+    
+    <label for="chest">Chest (inches):</label>
+    <input type="number" id="chest" placeholder="e.g., 38">
+    
+    <label for="height">Height (inches):</label>
+    <input type="number" id="height" placeholder="e.g., 68">
+    
+    <label for="waist">Waist (inches):</label>
+    <input type="number" id="waist" placeholder="e.g., 34">
+    
+    <label for="hip">Hip (inches):</label>
+    <input type="number" id="hip" placeholder="e.g., 40">
+    
+    <label for="inseam">Inseam (inches):</label>
+    <input type="number" id="inseam" placeholder="e.g., 32">
+    
+    <button onclick="calculateSizes()">Calculate Size</button>
+    
+    <div id="output" class="result" style="display: none;"></div>
+</div>
+
+<script>
+    function getUndershirtSize(chest, height) {
+        let numericalSize = "";
+        if (chest >= 28 && chest < 32) numericalSize = "XS";
+        else if (chest >= 32 && chest < 36) numericalSize = "S";
+        else if (chest >= 36 && chest < 40) numericalSize = "M";
+        else if (chest >= 40 && chest < 44) numericalSize = "L";
+        else if (chest >= 44 && chest < 48) numericalSize = "XL";
+        else if (chest >= 48 && chest < 52) numericalSize = "2XL";
+        else return "Invalid chest measurement.";
+
+        let heightSize = "";
+        if (height >= 59 && height < 63 && ["XS", "S", "M", "L"].includes(numericalSize)) heightSize = "X-Short";
+        else if (height >= 63 && height < 67 && ["S", "M", "L", "XL"].includes(numericalSize)) heightSize = "Short";
+        else if (height >= 67 && height < 71) heightSize = "Regular";
+        else if (height >= 71 && height < 75) heightSize = "Long";
+        else if (height >= 75 && height < 79 && ["L", "XL"].includes(numericalSize)) heightSize = "X-Long";
+
+        return heightSize ? `${numericalSize}-${heightSize}` : "Could not determine undershirt height.";
+    }
+
+    function getDrawersSize(waist, hip, inseam) {
+        // Determine size by Waist
+        let waistSizeObj = {size: "", rank: 0};
+        if (waist >= 24 && waist < 28) waistSizeObj = {size: "XS", rank: 1};
+        else if (waist >= 28 && waist < 32) waistSizeObj = {size: "S", rank: 2};
+        else if (waist >= 32 && waist < 36) waistSizeObj = {size: "M", rank: 3};
+        else if (waist >= 36 && waist < 40) waistSizeObj = {size: "L", rank: 4};
+        else if (waist >= 40 && waist < 44) waistSizeObj = {size: "XL", rank: 5};
+        else if (waist >= 44 && waist < 48) waistSizeObj = {size: "2XL", rank: 6};
+        
+        // Determine size by Hip (Standard +10 inch offset assumption)
+        let hipSizeObj = {size: "", rank: 0};
+        if (hip >= 34 && hip < 38) hipSizeObj = {size: "XS", rank: 1};
+        else if (hip >= 38 && hip < 42) hipSizeObj = {size: "S", rank: 2};
+        else if (hip >= 42 && hip < 46) hipSizeObj = {size: "M", rank: 3};
+        else if (hip >= 46 && hip < 50) hipSizeObj = {size: "L", rank: 4};
+        else if (hip >= 50 && hip < 54) hipSizeObj = {size: "XL", rank: 5};
+        else if (hip >= 54 && hip < 58) hipSizeObj = {size: "2XL", rank: 6};
+
+        // If either is completely out of range, default to the one that is valid
+        if (waistSizeObj.rank === 0 && hipSizeObj.rank === 0) return "Invalid waist/hip measurement.";
+        
+        // Take the larger size of the two for a proper fit
+        let numSize = waistSizeObj.rank >= hipSizeObj.rank ? waistSizeObj.size : hipSizeObj.size;
+
+        let hSize = "";
+        if (numSize === "S") {
+            if (inseam >= 25.5 && inseam < 28.5) hSize = "Short";
+            else if (inseam >= 28.5 && inseam < 31.5) hSize = "Regular";
+            else if (inseam >= 31.5 && inseam < 34.5) hSize = "Long";
+            else if (inseam >= 35.5 && inseam < 38.5) hSize = "X-Long";
+        } else if (numSize === "M" || numSize === "L") {
+            if (inseam >= 26.5 && inseam < 29.5) hSize = "Short";
+            else if (inseam >= 29.5 && inseam < 32.5) hSize = "Regular";
+            else if (inseam >= 32.5 && inseam < 35.5) hSize = "Long";
+            else if (inseam >= 35.5 && inseam < 38.5) hSize = "X-Long";
+        } else if (numSize === "XL" || numSize === "2XL") {
+            if (inseam >= 30.5 && inseam < 33.5) hSize = "Regular";
+            else if (inseam >= 33.5 && inseam < 36.5) hSize = "Long";
+            else if (inseam >= 36.5 && inseam < 39.5) hSize = "X-Long";
+        } else if (numSize === "XS") {
+            if (inseam >= 28.5 && inseam < 31.5) hSize = "Regular";
+        }
+
+        return hSize ? `${numSize}-${hSize}` : "Could not determine inseam length.";
+    }
+
+    function calculateSizes() {
+        const chest = parseFloat(document.getElementById('chest').value);
+        const height = parseFloat(document.getElementById('height').value);
+        const waist = parseFloat(document.getElementById('waist').value);
+        const hip = parseFloat(document.getElementById('hip').value);
+        const inseam = parseFloat(document.getElementById('inseam').value);
+        
+        const outputDiv = document.getElementById('output');
+
+        if (isNaN(chest) || isNaN(height) || isNaN(waist) || isNaN(hip) || isNaN(inseam)) {
+            outputDiv.style.display = "block";
+            outputDiv.innerHTML = "Please enter valid numbers for all fields.";
+            return;
+        }
+
+        const undershirt = getUndershirtSize(chest, height);
+        const drawers = getDrawersSize(waist, hip, inseam);
+
+        outputDiv.style.display = "block";
+        outputDiv.innerHTML = `Undershirt Size: ${undershirt} <br> Drawers Size: ${drawers}`;
+    }
+</script>
+
+</body>
+</html>
